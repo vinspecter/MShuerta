@@ -12,7 +12,12 @@ var Usuario = require('../models/usuario');
 // ============================
 app.get('/', (req, res, next) => {
 
+    var desde = req.query.desde || 0; // si no viene un parametro pone un cero
+    desde = Number(desde);
+
     Usuario.find({}, 'nombre email img rut role')
+        .skip(desde) // le digo a mongoose que se salte los primeros cinco registros
+        .limit(5)
         .exec(
             (err, usuarios) => {
                 if (err) {
@@ -23,9 +28,13 @@ app.get('/', (req, res, next) => {
                     })
                 }
 
-                res.status(200).json({
-                    ok: true,
-                    usuarios: usuarios
+                Usuario.count({}, (err, conteo) => {
+
+                    res.status(200).json({
+                        ok: true,
+                        usuarios: usuarios,
+                        total: conteo
+                    });
                 })
 
             })
